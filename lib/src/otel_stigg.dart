@@ -2,7 +2,6 @@
 // Copyright 2025-2026 Mindful Software LLC d/b/a Dartastic.io, All rights reserved.
 
 import 'package:dartastic_opentelemetry/dartastic_opentelemetry.dart';
-import 'package:dartastic_opentelemetry_api/dartastic_opentelemetry_api.dart';
 
 import 'otel_stigg_suppression.dart';
 
@@ -52,48 +51,62 @@ Future<T> tracedStigg<T>({
   final t = tracer ?? OTel.tracerProvider().getTracer('otel_stigg');
   final span = t.startSpan('stigg $operation', kind: SpanKind.client);
   try {
-    span.setStringAttribute('rpc.system', 'stigg');
+    span.addAttributes(
+        OTel.attributes([OTel.attributeString('rpc.system', 'stigg')]));
     final r = await invoke();
     final res = r.result;
     if (res != null) {
       if (res.environmentId != null) {
-        span.setStringAttribute('stigg.environment.id', res.environmentId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('stigg.environment.id', res.environmentId!)
+        ]));
       }
       if (res.productId != null) {
-        span.setStringAttribute('stigg.product.id', res.productId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('stigg.product.id', res.productId!)]));
       }
       if (res.planId != null) {
-        span.setStringAttribute('stigg.plan.id', res.planId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('stigg.plan.id', res.planId!)]));
       }
       if (res.customerId != null) {
-        span.setStringAttribute('stigg.customer.id', res.customerId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('stigg.customer.id', res.customerId!)]));
       }
       if (res.subscriptionId != null) {
-        span.setStringAttribute('stigg.subscription.id', res.subscriptionId!);
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString('stigg.subscription.id', res.subscriptionId!)
+        ]));
       }
       if (res.featureId != null) {
-        span.setStringAttribute('stigg.feature.id', res.featureId!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('stigg.feature.id', res.featureId!)]));
       }
       if (res.usageAmount != null) {
-        span.setDoubleAttribute('stigg.usage.amount', res.usageAmount!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeDouble('stigg.usage.amount', res.usageAmount!)]));
       }
       if (res.limitAmount != null) {
-        span.setDoubleAttribute('stigg.limit.amount', res.limitAmount!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeDouble('stigg.limit.amount', res.limitAmount!)]));
       }
       if (res.statusCode != null) {
-        span.setIntAttribute('http.response.status_code', res.statusCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeInt('http.response.status_code', res.statusCode!)]));
       }
       if (res.errorCode != null) {
-        span.setStringAttribute('stigg.error.code', res.errorCode!);
+        span.addAttributes(OTel.attributes(
+            [OTel.attributeString('stigg.error.code', res.errorCode!)]));
       }
-      final fail =
-          res.errorCode != null ||
+      final fail = res.errorCode != null ||
           (res.statusCode != null && res.statusCode! >= 400);
       if (fail) {
-        span.setStringAttribute(
-          ErrorResource.errorType.key,
-          res.errorCode ?? 'stigg.error',
-        );
+        span.addAttributes(OTel.attributes([
+          OTel.attributeString(
+            ErrorResource.errorType.key,
+            res.errorCode ?? 'stigg.error',
+          )
+        ]));
         span.setStatus(SpanStatusCode.Error, res.errorMessage);
       }
     }
